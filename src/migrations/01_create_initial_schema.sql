@@ -1,3 +1,7 @@
+-- Lib4All Database Schema
+-- This file contains all migrations in chronological order
+-- Run this file to create the complete database schema
+
 -- Migration: Create initial database schema
 -- Created at: 2025-08-27 10:00:00
 
