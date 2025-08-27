@@ -1,0 +1,12 @@
+{
+  "version": "1",
+  "name": "lib4all",
+  "type": "collection",
+  "ignore": [
+    "node_modules",
+    ".git"
+  ],
+  "runner": {
+    "collectionRunner": "collection-runner.json"
+  }
+}

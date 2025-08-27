@@ -1,0 +1,10 @@
+# Enable rewrite engine
+RewriteEngine On
+
+# Redirect to index.php for all non-file, non-directory requests
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule ^(.*)$ index.php [QSA,L]
+
+# Allow access to uploads directory
+RewriteRule ^uploads/(.*)$ uploads/$1 [L]

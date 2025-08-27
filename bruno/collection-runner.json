@@ -1,0 +1,25 @@
+{
+  "name": "Full Login Flow Test",
+  "sequences": [
+    {
+      "name": "User Login Flow",
+      "requestRefs": [
+        "login.bru",
+        "home.bru"
+      ]
+    },
+    {
+      "name": "Admin Login Flow",
+      "requestRefs": [
+        "admin-login.bru",
+        "home.bru"
+      ]
+    },
+    {
+      "name": "Books Access Test",
+      "requestRefs": [
+        "books.bru"
+      ]
+    }
+  ]
+}

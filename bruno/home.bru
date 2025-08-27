@@ -1,0 +1,21 @@
+meta {
+  name: Home Page
+  type: http
+  seq: 2
+}
+
+get {
+  url: http://localhost:8080/
+  auth: inherit
+}
+
+script:post-response {
+  // Check if user is logged in
+  if (res.body.includes("Hi, Test User")) {
+    console.log("User is logged in");
+  } else if (res.body.includes("Login")) {
+    console.log("User is not logged in");
+  } else {
+    console.log("Unexpected response");
+  }
+}

@@ -1,0 +1,22 @@
+meta {
+  name: Books Page
+  type: http
+  seq: 4
+}
+
+get {
+  url: http://localhost:8080/books
+  auth: inherit
+}
+
+script:post-response {
+  // Check if books page loads
+  if (res.status === 200) {
+    console.log("Books page loaded successfully");
+    if (res.body.includes("All Books")) {
+      console.log("Books content found");
+    }
+  } else {
+    console.log("Failed to load books page - status: " + res.status);
+  }
+}

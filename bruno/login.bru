@@ -1,0 +1,27 @@
+meta {
+  name: Login
+  type: http
+  seq: 1
+}
+
+post {
+  url: http://localhost:8080/login
+  body: formUrlEncoded
+  auth: inherit
+}
+
+body:form-urlencoded {
+  email: test@example.com
+  password: password
+}
+
+script:post-response {
+  // Check if login was successful
+  if (res.status === 302) {
+    console.log("Login successful - redirect received");
+  } else if (res.status === 200) {
+    console.log("Login failed - check credentials");
+  } else {
+    console.log("Unexpected response status: " + res.status);
+  }
+}
