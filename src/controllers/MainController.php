@@ -1,5 +1,9 @@
 <?php
 
+use PHPMailer\PHPMailer\PHPMailer;
+use PHPMailer\PHPMailer\SMTP;
+use PHPMailer\PHPMailer\Exception;
+
 class MainController extends Controller {
     
     public function index() {
@@ -152,5 +156,91 @@ class MainController extends Controller {
         }
         
         $this->redirect('/my-reservations');
+    }
+    
+    public function showContactForm() {
+        debug_log("MainController::showContactForm() called");
+        
+        $data = [
+            'title' => 'Contact Us - Lib4All'
+        ];
+        
+        $this->view('contact', $data);
+    }
+    
+    public function sendContactMessage() {
+        debug_log("MainController::sendContactMessage() called");
+        debug_log("POST data received", $_POST);
+        
+        $name = $_POST['name'] ?? '';
+        $email = $_POST['email'] ?? '';
+        $subject = $_POST['subject'] ?? '';
+        $message = $_POST['message'] ?? '';
+        
+        // Basic validation
+        if (empty($name) || empty($email) || empty($subject) || empty($message)) {
+            $_SESSION['flash_message'] = 'All fields are required.';
+            $_SESSION['flash_type'] = 'danger';
+            $this->redirect('/contact');
+            return;
+        }
+        
+        if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+            $_SESSION['flash_message'] = 'Please provide a valid email address.';
+            $_SESSION['flash_type'] = 'danger';
+            $this->redirect('/contact');
+            return;
+        }
+        
+        // Send confirmation email to the user
+        $mailService = new MailService();
+        $config = $mailService->getConfig();
+        
+        try {
+            // Send confirmation email to user
+            if ($mailService->sendContactConfirmation($email, $name, $subject, $message)) {
+                // Send notification to admin
+                $adminEmail = $config['mail_from_address'];
+                $adminName = $config['mail_from_name'];
+                
+                // Create admin notification email
+                $adminBody = "
+                    <h2>New Contact Form Submission</h2>
+                    <p><strong>From:</strong> " . htmlspecialchars($name) . " (" . htmlspecialchars($email) . ")</p>
+                    <p><strong>Subject:</strong> " . htmlspecialchars($subject) . "</p>
+                    <p><strong>Message:</strong></p>
+                    <p>" . nl2br(htmlspecialchars($message)) . "</p>
+                ";
+                
+                $adminMail = new PHPMailer(true);
+                $adminMail->isSMTP();
+                $adminMail->Host       = $config['mail_host'];
+                $adminMail->SMTPAuth   = true;
+                $adminMail->Username   = $config['mail_username'];
+                $adminMail->Password   = $config['mail_password'];
+                $adminMail->SMTPSecure = $config['mail_encryption'] === 'ssl' ? PHPMailer::ENCRYPTION_SMTPS : PHPMailer::ENCRYPTION_STARTTLS;
+                $adminMail->Port       = $config['mail_port'];
+                $adminMail->SMTPDebug  = 0;
+                
+                $adminMail->setFrom($config['mail_from_address'], $config['mail_from_name']);
+                $adminMail->addAddress($adminEmail, $adminName);
+                $adminMail->isHTML(true);
+                $adminMail->Subject = 'New Contact Form Submission - Lib4All';
+                $adminMail->Body = $adminBody;
+                $adminMail->AltBody = strip_tags($adminBody);
+                $adminMail->send();
+                
+                $_SESSION['flash_message'] = 'Thank you for contacting us. We have received your message and will get back to you soon.';
+                $_SESSION['flash_type'] = 'success';
+            } else {
+                throw new Exception("Failed to send confirmation email");
+            }
+        } catch (Exception $e) {
+            error_log("Failed to send contact email: " . $e->getMessage());
+            $_SESSION['flash_message'] = 'Sorry, there was an error sending your message. Please try again later.';
+            $_SESSION['flash_type'] = 'danger';
+        }
+        
+        $this->redirect('/contact');
     }
 }

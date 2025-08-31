@@ -149,4 +149,36 @@ class MailService {
             throw new Exception("Mailer Error: " . $this->mail->ErrorInfo);
         }
     }
+    
+    public function sendContactConfirmation($to, $name, $subject, $message) {
+        // Data for email template
+        $data = [
+            'name' => $name,
+            'subject' => $subject,
+            'message' => $message
+        ];
+        
+        // Render email template
+        ob_start();
+        include __DIR__ . '/../views/emails/contact_confirmation.php';
+        $body = ob_get_clean();
+        
+        try {
+            // Recipients
+            $this->mail->setFrom($this->config['mail_from_address'], $this->config['mail_from_name']);
+            $this->mail->addAddress($to, $name);
+            
+            // Content
+            $this->mail->isHTML(true);
+            $this->mail->Subject = 'Thank You for Contacting Lib4All';
+            $this->mail->Body    = $body;
+            $this->mail->AltBody = strip_tags($body);
+            
+            $this->mail->send();
+            return true;
+        } catch (Exception $e) {
+            error_log("Message could not be sent. Mailer Error: {$this->mail->ErrorInfo}");
+            return false;
+        }
+    }
 }

@@ -60,6 +60,9 @@
                     <li class="nav-item">
                         <a class="nav-link" href="/books">Books</a>
                     </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/contact">Contact</a>
+                    </li>
                 </ul>
                 <ul class="navbar-nav">
                     <?php if (isset($_SESSION['user_id'])): ?>
