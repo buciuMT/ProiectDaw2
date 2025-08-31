@@ -217,6 +217,14 @@ switch ($route) {
         debug_log("Routing to AuthController::pleaseVerify()");
         $authController->pleaseVerify();
         break;
+    case '/contact':
+        debug_log("Routing to MainController::contact()");
+        if ($method === 'GET') {
+            $mainController->showContactForm();
+        } elseif ($method === 'POST') {
+            $mainController->sendContactMessage();
+        }
+        break;
     default:
         debug_log("Routing to 404 page");
         // Show 404 page
