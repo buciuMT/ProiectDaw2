@@ -98,6 +98,15 @@ class BookController extends Controller {
             return;
         }
         
+        // Check if database connection is valid
+        if (!$this->db) {
+            debug_log("ERROR: Database connection is null in BookController");
+            $_SESSION['flash_message'] = 'Database connection error.';
+            $_SESSION['flash_type'] = 'danger';
+            $this->redirect('/books/scrape');
+            return;
+        }
+        
         // Include the BookScraperService
         require_once __DIR__ . '/../services/BookScraperService.php';
         

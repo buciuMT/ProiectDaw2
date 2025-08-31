@@ -23,8 +23,8 @@ class Book extends Model {
     }
     
     public function createBook($data) {
-        $sql = "INSERT INTO books (title, author, isbn, published_year, genre, copies_total, copies_available) 
-                VALUES (:title, :author, :isbn, :published_year, :genre, :copies_total, :copies_available)";
+        $sql = "INSERT INTO books (title, author, isbn, published_year, genre, copies_total, copies_available, cover_image) 
+                VALUES (:title, :author, :isbn, :published_year, :genre, :copies_total, :copies_available, :cover_image)";
         return $this->execute($sql, $data);
     }
     

@@ -7,7 +7,7 @@ function trackVisit($db, $pageUrl = null) {
     }
     
     // Determine if user is logged in
-    $isLoggedIn = isset($_SESSION['user_id']);
+    $isLoggedIn = isset($_SESSION['user_id']) ? 1 : 0;
     $userId = $isLoggedIn ? $_SESSION['user_id'] : null;
     
     // Get IP address
