@@ -16,3 +16,14 @@
 
 9. Integrarea de informatii (nu pagini, elemente ale acestora – parsare continut) din surse externe. [X]  
 
+### Admin User
+Email: admin@lib4all.com
+Password: password
+
+### Librarian User
+Email: librarian@lib4all.com
+Password: password
+
+### Member User
+Email: member@lib4all.com
+Password: password
