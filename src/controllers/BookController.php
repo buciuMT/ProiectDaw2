@@ -70,6 +70,70 @@ class BookController extends Controller {
         $this->view('book_form', $data);
     }
     
+    public function scrape() {
+        debug_log("BookController::scrape() called");
+        
+        // Check if user is admin using middleware
+        AuthMiddleware::requireAdmin();
+        
+        $data = [
+            'title' => 'Scrape Book - Lib4All'
+        ];
+        
+        $this->view('book_scrape', $data);
+    }
+    
+    public function scrapeStore() {
+        debug_log("BookController::scrapeStore() called");
+        
+        // Check if user is admin using middleware
+        AuthMiddleware::requireAdmin();
+        
+        $url = $_POST['url'] ?? '';
+        
+        if (empty($url)) {
+            $_SESSION['flash_message'] = 'Please provide a URL to scrape.';
+            $_SESSION['flash_type'] = 'danger';
+            $this->redirect('/books/scrape');
+            return;
+        }
+        
+        // Include the BookScraperService
+        require_once __DIR__ . '/../services/BookScraperService.php';
+        
+        // Create scraper instance
+        $scraper = new BookScraperService();
+        
+        // Scrape book data
+        $bookData = $scraper->scrapeBookFromUrl($url);
+        
+        if ($bookData === false) {
+            $_SESSION['flash_message'] = 'Failed to scrape book information from the provided URL.';
+            $_SESSION['flash_type'] = 'danger';
+            $this->redirect('/books/scrape');
+            return;
+        }
+        
+        // Add book to library
+        $bookId = $scraper->addBookToLibrary($bookData, $this->db);
+        
+        if ($bookId === false) {
+            $_SESSION['flash_message'] = 'Failed to add scraped book to the library.';
+            $_SESSION['flash_type'] = 'danger';
+            $this->redirect('/books/scrape');
+            return;
+        }
+        
+        // Set success message
+        $_SESSION['flash_message'] = 'Book successfully scraped and added to the library!';
+        $_SESSION['flash_type'] = 'success';
+        
+        debug_log("Book scraped and added successfully, redirecting to books list");
+        
+        // Redirect to books list
+        $this->redirect('/books');
+    }
+    
     public function store() {
         debug_log("BookController::store() called");
         
@@ -279,9 +343,9 @@ class BookController extends Controller {
             return;
         }
         
-        // Create reservation
+        // Create reservation without automatically setting due date
         $reservationModel = new Reservation($this->db);
-        $result = $reservationModel->createReservation($_SESSION['user_id'], $id);
+        $result = $reservationModel->createReservation($_SESSION['user_id'], $id, false);
         
         debug_log("Reservation creation result: " . ($result ? 'success' : 'failed'));
         

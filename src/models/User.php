@@ -3,12 +3,12 @@
 class User extends Model {
     
     public function getAllUsers() {
-        $sql = "SELECT id, name, email, role, verified, created_at FROM users ORDER BY created_at DESC";
+        $sql = "SELECT id, name, email, role, verified, verification_token, created_at FROM users ORDER BY created_at DESC";
         return $this->fetchAll($sql);
     }
     
     public function getUserById($id) {
-        $sql = "SELECT id, name, email, role, verified, created_at FROM users WHERE id = :id";
+        $sql = "SELECT id, name, email, role, verified, verification_token, created_at FROM users WHERE id = :id";
         return $this->fetch($sql, ['id' => $id]);
     }
     
@@ -17,13 +17,18 @@ class User extends Model {
         return $this->fetch($sql, ['email' => $email]);
     }
     
+    public function getUserByVerificationToken($token) {
+        $sql = "SELECT * FROM users WHERE verification_token = :token";
+        return $this->fetch($sql, ['token' => $token]);
+    }
+    
     public function createUser($data) {
-        $sql = "INSERT INTO users (name, email, password, role) VALUES (:name, :email, :password, :role)";
+        $sql = "INSERT INTO users (name, email, password, role, verification_token) VALUES (:name, :email, :password, :role, :verification_token)";
         return $this->execute($sql, $data);
     }
     
     public function verifyUser($id) {
-        $sql = "UPDATE users SET verified = CURDATE() WHERE id = :id";
+        $sql = "UPDATE users SET verified = CURDATE(), verification_token = NULL WHERE id = :id";
         return $this->execute($sql, ['id' => $id]);
     }
     

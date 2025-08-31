@@ -29,30 +29,9 @@ class AuthController extends Controller {
         
         debug_log("User lookup result", $user);
         
-        if ($user && password_verify($password, $user['password'])) {
-            debug_log("Authentication successful for user: " . $user['name']);
-            
-            // Set session variables
-            $_SESSION['user_id'] = $user['id'];
-            $_SESSION['user_name'] = $user['name'];
-            $_SESSION['user_role'] = $user['role'];
-            
-            debug_log("Session data after login", $_SESSION);
-            
-            // Set a success message in session
-            $_SESSION['flash_message'] = 'Login successful. Welcome back, ' . $user['name'] . '!';
-            $_SESSION['flash_type'] = 'success';
-            
-            // Redirect to home page
-            debug_log("Redirecting to home page");
-            $this->redirect('/');
-        } else {
-            debug_log("Authentication failed for email: " . $email);
-            if ($user) {
-                debug_log("User found but password verification failed");
-            } else {
-                debug_log("User not found");
-            }
+        // Check if user exists
+        if (!$user) {
+            debug_log("Authentication failed - user not found for email: " . $email);
             
             // Show login page with error
             $data = [
@@ -60,7 +39,47 @@ class AuthController extends Controller {
                 'error' => 'Invalid email or password'
             ];
             $this->view('login', $data);
+            return;
         }
+        
+        // Check password
+        if (!password_verify($password, $user['password'])) {
+            debug_log("Authentication failed - password verification failed for user: " . $user['name']);
+            
+            // Show login page with error
+            $data = [
+                'title' => 'Login - Lib4All',
+                'error' => 'Invalid email or password'
+            ];
+            $this->view('login', $data);
+            return;
+        }
+        
+        // Check if user's email is verified
+        if (!$user['verified']) {
+            debug_log("Authentication failed - email not verified for user: " . $user['name']);
+            
+            // Redirect to please verify page
+            $this->redirect('/please-verify');
+            return;
+        }
+        
+        debug_log("Authentication successful for user: " . $user['name']);
+        
+        // Set session variables
+        $_SESSION['user_id'] = $user['id'];
+        $_SESSION['user_name'] = $user['name'];
+        $_SESSION['user_role'] = $user['role'];
+        
+        debug_log("Session data after login", $_SESSION);
+        
+        // Set a success message in session
+        $_SESSION['flash_message'] = 'Login successful. Welcome back, ' . $user['name'] . '!';
+        $_SESSION['flash_type'] = 'success';
+        
+        // Redirect to home page
+        debug_log("Redirecting to home page");
+        $this->redirect('/');
     }
     
     public function showRegister() {
@@ -113,26 +132,30 @@ class AuthController extends Controller {
             return;
         }
         
+        // Generate verification token
+        $verificationToken = bin2hex(random_bytes(50));
+        
         // Create new user
         $hashedPassword = password_hash($password, PASSWORD_DEFAULT);
         $userData = [
             'name' => $name,
             'email' => $email,
             'password' => $hashedPassword,
-            'role' => 'member' // Default role
+            'role' => 'member', // Default role
+            'verification_token' => $verificationToken
         ];
         
         debug_log("Creating new user with data", $userData);
         
         $userModel->createUser($userData);
         
-        // Send registration email
-        debug_log("Sending registration email to: " . $email);
+        // Send verification email
+        debug_log("Sending verification email to: " . $email);
         $mailService = new MailService();
-        $mailService->sendRegistrationEmail($email, $name);
+        $mailService->sendVerificationEmail($email, $name, $verificationToken);
         
         // Set a success message in session
-        $_SESSION['flash_message'] = 'Registration successful. Please check your email for confirmation.';
+        $_SESSION['flash_message'] = 'Registration successful. Please check your email for verification instructions.';
         $_SESSION['flash_type'] = 'success';
         
         debug_log("Registration successful, redirecting to login page");
@@ -156,5 +179,51 @@ class AuthController extends Controller {
         
         // Redirect to home page
         $this->redirect('/');
+    }
+    
+    public function verifyEmail() {
+        debug_log("AuthController::verifyEmail() called");
+        
+        $token = $_GET['token'] ?? '';
+        
+        if (empty($token)) {
+            $data = [
+                'title' => 'Invalid Verification Link - Lib4All',
+                'error' => 'Invalid verification link. Please check your email for the correct link.'
+            ];
+            $this->view('verify_email', $data);
+            return;
+        }
+        
+        // Get user by verification token
+        $userModel = new User($this->db);
+        $user = $userModel->getUserByVerificationToken($token);
+        
+        if (!$user) {
+            $data = [
+                'title' => 'Invalid Verification Link - Lib4All',
+                'error' => 'Invalid verification link. The link may have expired or already been used.'
+            ];
+            $this->view('verify_email', $data);
+            return;
+        }
+        
+        // Verify the user
+        $userModel->verifyUser($user['id']);
+        
+        $data = [
+            'title' => 'Email Verified - Lib4All',
+            'message' => 'Your email has been successfully verified. You can now log in to your account.'
+        ];
+        $this->view('verify_email', $data);
+    }
+    
+    public function pleaseVerify() {
+        debug_log("AuthController::pleaseVerify() called");
+        
+        $data = [
+            'title' => 'Email Verification Required - Lib4All'
+        ];
+        $this->view('please_verify', $data);
     }
 }

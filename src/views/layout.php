@@ -63,17 +63,34 @@
                 </ul>
                 <ul class="navbar-nav">
                     <?php if (isset($_SESSION['user_id'])): ?>
+                        <?php if ($_SESSION['user_role'] === 'librarian' || $_SESSION['user_role'] === 'admin'): ?>
+                            <li class="nav-item">
+                                <a class="nav-link" href="/employee/dashboard">Employee Dashboard</a>
+                            </li>
+                        <?php endif; ?>
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                My Library
+                            </a>
+                            <ul class="dropdown-menu" aria-labelledby="navbarDropdown">
+                                <li><a class="dropdown-item" href="/my-reservations">My Reservations</a></li>
+                                <li><a class="dropdown-item" href="/my-books">My Borrowed Books</a></li>
+                                <li><a class="dropdown-item" href="/reservation-history">Reservation History</a></li>
+                            </ul>
+                        </li>
                         <li class="nav-item d-flex align-items-center">
                             <div class="user-info text-white">
                                 <span class="me-2">Hi, <?php echo htmlspecialchars($_SESSION['user_name']); ?></span>
-                                <?php if ($_SESSION['user_role'] === 'admin' || $_SESSION['user_role'] === 'librarian'): ?>
+                                <?php if ($_SESSION['user_role'] === 'admin'): ?>
                                     <span class="badge bg-warning text-dark">Admin</span>
+                                <?php elseif ($_SESSION['user_role'] === 'librarian'): ?>
+                                    <span class="badge bg-info">Employee</span>
                                 <?php else: ?>
                                     <span class="badge bg-success">Member</span>
                                 <?php endif; ?>
                             </div>
                         </li>
-                        <?php if ($_SESSION['user_role'] === 'admin' || $_SESSION['user_role'] === 'librarian'): ?>
+                        <?php if ($_SESSION['user_role'] === 'admin'): ?>
                             <li class="nav-item">
                                 <a class="nav-link" href="/admin/dashboard">Admin</a>
                             </li>

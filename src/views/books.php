@@ -4,7 +4,7 @@ $title = 'All Books - Lib4All';
 // Function to render a book card
 function renderBookCard($book, $showEditButton = false) {
     $coverImage = !empty($book['cover_image']) ? '/' . htmlspecialchars($book['cover_image']) : 'https://via.placeholder.com/200x300?text=No+Cover';
-    $editButton = $showEditButton && isset($_SESSION['user_role']) && $_SESSION['user_role'] === 'admin' 
+    $editButton = $showEditButton && isset($_SESSION['user_role']) && ($_SESSION['user_role'] === 'admin' || $_SESSION['user_role'] === 'librarian')
         ? '<a href="/books/edit?id=' . $book['id'] . '" class="btn btn-sm btn-primary mt-2">Edit</a>' 
         : '';
     
@@ -32,8 +32,11 @@ ob_start();
 
 <div class="d-flex justify-content-between align-items-center mb-3">
     <h1>All Books</h1>
-    <?php if (isset($_SESSION['user_role']) && $_SESSION['user_role'] === 'admin'): ?>
-        <a href="/books/create" class="btn btn-success">Add New Book</a>
+    <?php if (isset($_SESSION['user_role']) && ($_SESSION['user_role'] === 'admin' || $_SESSION['user_role'] === 'librarian')): ?>
+        <div>
+            <a href="/books/create" class="btn btn-success me-2">Add New Book</a>
+            <a href="/books/scrape" class="btn btn-primary">Scrape Book</a>
+        </div>
     <?php endif; ?>
 </div>
 

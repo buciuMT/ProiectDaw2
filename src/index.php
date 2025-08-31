@@ -2,6 +2,9 @@
 
 require_once __DIR__ . '/bootstrap.php';
 
+// Track visit
+trackVisit($db);
+
 // Simple router
 $path = $_SERVER['REQUEST_URI'];
 $method = $_SERVER['REQUEST_METHOD'];
@@ -41,6 +44,16 @@ switch ($route) {
         debug_log("Routing to BookController::create()");
         $bookController->create();
         break;
+    case '/books/scrape':
+        debug_log("Routing to BookController::scrape()");
+        $bookController->scrape();
+        break;
+    case '/books/scrape-store':
+        debug_log("Routing to BookController::scrapeStore()");
+        if ($method === 'POST') {
+            $bookController->scrapeStore();
+        }
+        break;
     case '/books/store':
         debug_log("Routing to BookController::store()");
         if ($method === 'POST') {
@@ -77,10 +90,32 @@ switch ($route) {
             $bookController->reserve($_GET['id']);
         }
         break;
+    case '/reservation-history':
+        debug_log("Routing to MainController::reservationHistory()");
+        $mainController->reservationHistory();
+        break;
     case '/books/cancel-reservation':
         debug_log("Routing to BookController::cancelReservation() with id: " . ($_GET['id'] ?? 'null'));
         if ($method === 'POST' && isset($_GET['id']) && isset($_GET['reservation_id'])) {
             $bookController->cancelReservation($_GET['id']);
+        }
+        break;
+    case '/my-reservations':
+        debug_log("Routing to MainController::myReservations()");
+        $mainController->myReservations();
+        break;
+    case '/my-books':
+        debug_log("Routing to MainController::myBooks()");
+        $mainController->myBooks();
+        break;
+    case '/reservation-history':
+        debug_log("Routing to MainController::reservationHistory()");
+        $mainController->reservationHistory();
+        break;
+    case '/cancel-reservation':
+        debug_log("Routing to MainController::cancelReservation()");
+        if ($method === 'POST') {
+            $mainController->cancelReservation();
         }
         break;
     case '/users':
@@ -145,6 +180,42 @@ switch ($route) {
     case '/admin/migrations/run':
         debug_log("Routing to AdminController::runMigration()");
         $adminController->runMigration();
+        break;
+    case '/employee/dashboard':
+        debug_log("Routing to EmployeeController::dashboard()");
+        $employeeController = new EmployeeController($db);
+        $employeeController->dashboard();
+        break;
+    case '/employee/manage-reservation':
+        debug_log("Routing to EmployeeController::manageReservation()");
+        $employeeController = new EmployeeController($db);
+        if ($method === 'POST') {
+            $employeeController->manageReservation();
+        }
+        break;
+    case '/admin/test':
+        debug_log("Routing to AdminController::test()");
+        $adminController->test();
+        break;
+    case '/admin/visit-statistics':
+        debug_log("Routing to AdminController::visitStatistics()");
+        $adminController->visitStatistics();
+        break;
+    case '/admin/export-statistics':
+        debug_log("Routing to AdminController::exportStatistics()");
+        $adminController->exportStatistics();
+        break;
+    case '/api/test':
+        debug_log("Routing to AdminController::apiTest()");
+        $adminController->apiTest();
+        break;
+    case '/verify-email':
+        debug_log("Routing to AuthController::verifyEmail()");
+        $authController->verifyEmail();
+        break;
+    case '/please-verify':
+        debug_log("Routing to AuthController::pleaseVerify()");
+        $authController->pleaseVerify();
         break;
     default:
         debug_log("Routing to 404 page");

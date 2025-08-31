@@ -1,3 +1,4 @@
 extra/
 vendor/
 .env
+src/.env
